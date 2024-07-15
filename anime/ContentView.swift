@@ -3,20 +3,109 @@ import WebKit
 
 struct ContentView: View {
     @State private var isShowingLoadingScreen = true
+    @State private var isShowingDownloadAlert = false
 
     var body: some View {
         NavigationView {
             ZStack {
                 WebView(url: URL(string: "https://anime-sama.fr")!, isShowingLoadingScreen: $isShowingLoadingScreen)
                     .navigationBarHidden(true)
-                    .background(Color.black) // Set background color to black
+                    .background(Color.black.edgesIgnoringSafeArea(.all)) // Set background color to black
+                
+                VStack {
+                    Spacer()
+                    Button(action: {
+                        downloadLocalStorageFile()
+                    }) {
+                        Text("Télécharger")
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(10)
+                    }
+                    .padding(.bottom, 20)
+                }
             }
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                     self.isShowingLoadingScreen = false
                 }
             }
+            .alert(isPresented: $isShowingDownloadAlert) {
+                Alert(
+                    title: Text("Téléchargement terminé"),
+                    message: Text("Le fichier localstorage.sqlite3 a été téléchargé avec succès."),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
         }
+    }
+    
+    func downloadLocalStorageFile() {
+        let fileManager = FileManager.default
+        let libraryDirectory = fileManager.urls(for: .libraryDirectory, in: .userDomainMask).first!
+        let webkitDataDirectory = libraryDirectory.appendingPathComponent("WebKit/WebsiteData/Default")
+
+        if let localStoragePath = findLocalStorageFile(in: webkitDataDirectory) {
+            let documentDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+            
+            // Generate unique filename based on current timestamp
+            let timestamp = Int(Date().timeIntervalSince1970)
+            let destinationURL = documentDirectory.appendingPathComponent("DownloadedLocalStorage_\(timestamp).sqlite3")
+            
+            // Check if file with same name already exists
+            var destinationURLFinal = destinationURL
+            var count = 1
+            while fileManager.fileExists(atPath: destinationURLFinal.path) {
+                let newName = "DownloadedLocalStorage_\(timestamp)_\(count).sqlite3"
+                destinationURLFinal = documentDirectory.appendingPathComponent(newName)
+                count += 1
+            }
+            
+            do {
+                try fileManager.copyItem(at: localStoragePath, to: destinationURLFinal)
+                
+                // Present the share sheet to allow the user to download the file
+                let activityViewController = UIActivityViewController(activityItems: [destinationURLFinal], applicationActivities: nil)
+                
+                // Get the root view controller to present the share sheet
+                if let rootViewController = UIApplication.shared.windows.first?.rootViewController {
+                    rootViewController.present(activityViewController, animated: true, completion: {
+                        self.isShowingDownloadAlert = true
+                    })
+                }
+            } catch {
+                print("Error copying file: \(error.localizedDescription)")
+            }
+        } else {
+            print("Local storage file not found.")
+        }
+    }
+    
+    func findLocalStorageFile(in directory: URL) -> URL? {
+        let fileManager = FileManager.default
+        let localStorageFileName = "localstorage.sqlite3"
+        
+        do {
+            let contents = try fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+            
+            for item in contents {
+                if item.lastPathComponent == localStorageFileName {
+                    return item
+                }
+                
+                var isDirectory: ObjCBool = false
+                if fileManager.fileExists(atPath: item.path, isDirectory: &isDirectory), isDirectory.boolValue {
+                    if let found = findLocalStorageFile(in: item) {
+                        return found
+                    }
+                }
+            }
+        } catch {
+            print("Error searching directory: \(error.localizedDescription)")
+        }
+        
+        return nil
     }
 }
 
@@ -78,11 +167,6 @@ struct WebView: UIViewRepresentable {
                 img.logo-circular:hover {
                     transform: rotate(360deg);
                 }
-
-                /*   */
-
-
-                
             `;
 
             function injectStyle() {
