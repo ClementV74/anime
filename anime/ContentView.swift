@@ -236,61 +236,71 @@ struct WebView: UIViewRepresentable {
             
             // JavaScript code to inject styles and remove specific elements
             let jsCode = """
-                     const color = '#000411';
-                     const newStyle = `
-                         body {
-                             background-color: ${color} !important;
-                             background-image: none !important;
-                         }
-                         [href*="https://youradexchange.com/"],
-                         [src*="https://youradexchange.com/"] {
-                             display: none !important;
-                         }
-                         img[src*="https://cdn.statically.io/gh/Anime-Sama/IMG/img/autres/flag_pal.png"] {
-                             display: none !important;
-                         }
-                         img.logo-circular {
-                             border-radius: 50%;
-                             transition: transform 0.5s ease;
-                         }
-                         img.logo-circular:hover {
-                             transform: rotate(360deg);
-                         }
-                     `;
-                     function injectStyle() {
-                         const style = document.createElement('style');
-                         style.type = 'text/css';
-                         style.innerHTML = newStyle;
-                         document.head.appendChild(style);
+                 const color = '#000411';
+                 const newStyle = `
+                     body {
+                         background-color: ${color} !important;
+                         background-image: none !important;
                      }
-                     function replaceLogo() {
-                         const logos = document.querySelectorAll('img[src*="https://cdn.statically.io/gh/Anime-Sama/IMG/img/autres/logo_banniere.png"]');
-                         logos.forEach((logo) => {
-                             logo.src = 'https://feegaffe.fr/logo.png';
-                             logo.classList.add('logo-circular');
+                     [href*="https://youradexchange.com/"],
+                     [href*="//feltatchaiz.net/"],
+                     [src*="https://youradexchange.com/"] {
+                         display: none !important;
+                     }
+                     img[src*="https://cdn.statically.io/gh/Anime-Sama/IMG/img/autres/flag_pal.png"] {
+                         display: none !important;
+                     }
+                     #dl-banner-300x250 {
+                         display: none !important;
+                     }
+                     img.logo-circular {
+                         border-radius: 50%;
+                         transition: transform 0.5s ease;
+                     }
+                     img.logo-circular:hover {
+                         transform: rotate(360deg);
+                     }
+                     .xl\\:pl-60.pt-1.sm\\:inline-flex {
+                         display: none !important;
+                     }
+                     .items-center.justify-center.align-center {
+                         display: none !important;
+                     }
+                 `;
+                 function injectStyle() {
+                     const style = document.createElement('style');
+                     style.type = 'text/css';
+                     style.innerHTML = newStyle;
+                     document.head.appendChild(style);
+                 }
+                 function replaceLogo() {
+                     const logos = document.querySelectorAll('img[src*="https://cdn.statically.io/gh/Anime-Sama/IMG/img/autres/logo_banniere.png"]');
+                     logos.forEach((logo) => {
+                         logo.src = 'https://feegaffe.fr/logo.png';
+                         logo.classList.add('logo-circular');
+                     });
+                 }
+                 function observeLogo() {
+                     const observer = new MutationObserver((mutations) => {
+                         mutations.forEach((mutation) => {
+                             if (mutation.addedNodes.length > 0 || mutation.type === 'attributes') {
+                                 replaceLogo();
+                             }
                          });
-                     }
-                     function observeLogo() {
-                         const observer = new MutationObserver((mutations) => {
-                             mutations.forEach((mutation) => {
-                                 if (mutation.addedNodes.length > 0 || mutation.type === 'attributes') {
-                                     replaceLogo();
-                                 }
-                             });
-                         });
-                         observer.observe(document.body, {
-                             childList: true,
-                             subtree: true,
-                             attributes: true
-                         });
-                     }
-                     injectStyle();
-                     observeLogo();
-                     const paypalLink = document.querySelector('a[href="https://www.paypal.com/donate/?hosted_button_id=3FBNLMGT3JAJ2"]');
-                     if (paypalLink) {
-                         paypalLink.remove();
-                     }
-                     """
+                     });
+                     observer.observe(document.body, {
+                         childList: true,
+                         subtree: true,
+                         attributes: true
+                     });
+                 }
+                 injectStyle();
+                 observeLogo();
+                 const paypalLink = document.querySelector('a[href="https://www.paypal.com/donate/?hosted_button_id=3FBNLMGT3JAJ2"]');
+                 if (paypalLink) {
+                     paypalLink.remove();
+                 }
+                 """
             
             webView.evaluateJavaScript(jsCode, completionHandler: nil)
         }
