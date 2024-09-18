@@ -17,7 +17,7 @@ struct ContentView: View {
             ZStack {
                 WebView(url: URL(string: "https://anime-sama.fr")!, 
                     isShowingLoadingScreen: $isShowingLoadingScreen,
-                    userId: $userId) // Pass the Binding here
+                    userId: $userId) 
                     .navigationBarHidden(true)
                     .background(Color.black.edgesIgnoringSafeArea(.all))
                    
@@ -135,7 +135,7 @@ struct ContentView: View {
     }
 
     func uploadJSONFile(jsonFileURL: URL, userId: Int) {
-        let url = URL(string: "https://feegaffe.fr/histo/upload.php")! // Updated API endpoint
+        let url = URL(string: "https://feegaffe.fr/histo/upload.php")! 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         
@@ -230,7 +230,7 @@ struct WebView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
-        // Nous n'avons pas besoin de faire quelque chose ici pour ce cas précis
+       
     }
 
     class Coordinator: NSObject, WKNavigationDelegate {
@@ -481,7 +481,7 @@ struct WebView: UIViewRepresentable {
 
 struct LoginView: View {
     @Binding var isShowing: Bool
-    @Binding var userId: Int? // Assurez-vous que le type est Int?
+    @Binding var userId: Int?
     @State private var username = ""
     @State private var password = ""
     @State private var isError = false
@@ -586,8 +586,8 @@ struct LoginView: View {
 
 struct AuthenticationResult: Codable {
     let success: Bool
-    let userId: Int? // Assurez-vous que c'est de type Int?
-    let message: String? //
+    let userId: Int? 
+    let message: String? 
 }
 
 extension Data {
